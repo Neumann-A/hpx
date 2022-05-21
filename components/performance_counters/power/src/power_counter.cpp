@@ -74,7 +74,7 @@ namespace hpx::performance_counters::power {
             if (rc != PWR_RET_SUCCESS || cntxt == nullptr)
             {
                 HPX_THROW_EXCEPTION(bad_request, "power::init",
-                    hpx::format(
+                    hpx::util::format(
                         "PWR_CntxtInit returned error: {} (locality: {})", rc,
                         hpx::get_locality_name()));
             }
@@ -83,7 +83,7 @@ namespace hpx::performance_counters::power {
             if (rc != PWR_RET_SUCCESS || obj == nullptr)
             {
                 HPX_THROW_EXCEPTION(bad_request, "power::init",
-                    hpx::format("PWR_CntxtGetObjByName returned error: {} "
+                    hpx::util::format("PWR_CntxtGetObjByName returned error: {} "
                                 "(locality: {})",
                         rc, hpx::get_locality_name()));
             }
@@ -97,7 +97,7 @@ namespace hpx::performance_counters::power {
             if (rc != PWR_RET_SUCCESS)
             {
                 HPX_THROW_EXCEPTION(bad_request, "power::sample_power",
-                    hpx::format(
+                    hpx::util::format(
                         "PWR_ObjAttrGetValue returned error: {} (locality: {})",
                         rc, hpx::get_locality_name()));
             }
