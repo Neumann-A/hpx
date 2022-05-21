@@ -93,7 +93,7 @@ namespace hpx::performance_counters::power {
 
         void sample_power(double& energy, PWR_Time& pwr_time)
         {
-            rc = PWR_ObjAttrGetValue(obj, PWR_ATTR_ENERGY, &energy, &pwr_time);
+            int rc = PWR_ObjAttrGetValue(obj, PWR_ATTR_ENERGY, &energy, &pwr_time);
             if (rc != PWR_RET_SUCCESS)
             {
                 HPX_THROW_EXCEPTION(bad_request, "power::sample_power",
