@@ -132,7 +132,7 @@ namespace hpx { namespace util { namespace batch_environments {
             }
             char * core_list = std::getenv("CCP_COREIDS");
             if(core_list != nullptr) {
-                core_bind_ = std::string{"thread:all=core:"};
+                core_bind_ = std::string{"thread:all=pu:"};
                 core_bind_.append(core_list);
                 boost::algorithm::replace_all(core_bind_, " ", ",");
             }
