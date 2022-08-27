@@ -677,7 +677,7 @@ namespace hpx { namespace resource { namespace detail {
             // Make sure the total number of requested threads does not exceed
             // the number of threads requested on the command line
             std::size_t num_threads =
-                util::get_entry_as<std::size_t>(rtcfg_, "hpx.os_threads",  std::size_t(-1));
+                util::get_entry_as<std::size_t>(rtcfg_, "hpx.os_threads",  0);
             HPX_ASSERT(num_threads != 0);
 
             if (detail::init_pool_data::num_threads_overall > num_threads)

@@ -68,22 +68,27 @@ namespace hpx { namespace util { namespace batch_environments {
         {
             auto current_node_name = std::getenv("COMPUTERNAME");
 
+            const std::string current_node_str{current_node_name};
+            const std::string nodes_str{nodes_core_list};
+
             // Initialize our node number
             boost::char_separator<char> sep(" ");
-            boost::tokenizer<boost::char_separator<char>> tok(std::string{nodes_core_list}, sep);
+            boost::tokenizer<boost::char_separator<char>> tok(nodes_str, sep);
 
             // Number of Nodes is first element
-            auto num_localities = std::string{*std::begin(tok)};
-            num_localities_ = from_string<std::size_t>(num_localities, std::size_t(1));
+            const std::string num_localities_str{*std::begin(tok)};
+            num_localities_ =
+                from_string<std::size_t>(num_localities_str, std::size_t(1));
 
-            // Calculate node number from CCP_NODES by finding COMPUTERNAME
-            auto found_node_pos = std::find(std::begin(tok),std::end(tok),std::string(current_node_name));
+            // Calculate node number from CCP_NODES by finding COMPUTERNAME            
+            auto found_node_pos =
+                std::find(std::begin(tok), std::end(tok), current_node_str);
             if(found_node_pos == std::end(tok)) {
                 // Currrent COMPUTERNAME not in CCP_NODES -> invalid environment
                 valid_ = false;
                 return;
             }
-            node_num_ = ((static_cast<std::size_t>(std::distance(std::begin(tok),found_node_pos)) - 1) / 2)+1; 
+            node_num_ = ((static_cast<std::size_t>(std::distance(std::begin(tok),found_node_pos)) - 1) / 2); 
             // -1 Since first element ist number of nodes; div 2 due to CCP_NODES being pairs of <name> <avail_cores>
 
             if (have_mpi)
@@ -100,10 +105,11 @@ namespace hpx { namespace util { namespace batch_environments {
             char* core_list = std::getenv("CCP_COREIDS");
             if (core_list != nullptr)
             {
+                const std::string core_list_str{core_list};
                 boost::tokenizer<boost::char_separator<char>> tok(
-                    std::string(core_list), sep);
+                    core_list_str, sep);
                 num_threads_ = static_cast<std::size_t>(
-                    std::distance(std::begin(tok), std::end(tok))) + 1;
+                    std::distance(std::begin(tok), std::end(tok)));
                 core_bind_ = std::string{"thread:all=pu:"};
                 core_bind_.append(core_list);
                 boost::algorithm::replace_all(core_bind_, " ", ",");

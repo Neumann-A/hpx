@@ -47,9 +47,5 @@ namespace hpx { namespace util { namespace batch_environments {
         std::size_t num_threads_;
         std::string core_bind_;
         bool valid_;
-
-        HPX_CORE_EXPORT void read_node_env(
-            std::vector<std::string>& nodelist, bool have_mpi, bool debug);
-        
     };
 }}}    // namespace hpx::util::batch_environments
