@@ -116,7 +116,8 @@ namespace hpx { namespace util { namespace batch_environments {
             }
             else
             {
-                num_threads_ =  from_string<std::size_t>(*(found_node_pos++));
+                const std::string num_cores_str{*(++found_node_pos)};
+                num_threads_ = from_string<std::size_t>(num_cores_str);
             }
 
             // Populate nodelist.
