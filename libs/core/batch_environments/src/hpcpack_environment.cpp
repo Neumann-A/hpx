@@ -5,23 +5,15 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <hpx/config.hpp>
-#include <hpx/assert.hpp>
 #include <hpx/batch_environments/hpcpack_environment.hpp>
-#include <hpx/string_util/classification.hpp>
-#include <hpx/string_util/split.hpp>
 #include <hpx/util/from_string.hpp>
 
 #include <algorithm>
-#include <atomic>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
 #include <cstddef>
-#include <iostream>
-#include <string_view>
 #include <string>
-#include <charconv>
-#include <utility>
 #include <vector>
 
 // Env variables for HPC Pack can be found at:
@@ -71,83 +63,66 @@ namespace hpx { namespace util { namespace batch_environments {
       , num_threads_(std::size_t(-1))
       , valid_(false)
     {
-        char* node_num = std::getenv("CCP_TASKSYSTEMID"); //Not certain about this one. 
-
-        valid_ = node_num != nullptr;
-        if (valid_)
+        auto nodes_core_list = std::getenv("CCP_NODES");
+        if (valid_ = (nodes_core_list != nullptr); valid_)
         {
+            auto current_node_name = std::getenv("COMPUTERNAME");
+
             // Initialize our node number
-            node_num_ = from_string<std::size_t>(node_num, std::size_t(1));
-            auto cpp_nodes = std::getenv("CCP_NODES");
-            auto num_localities = std::string(cpp_nodes);
-            {
-                boost::char_separator<char> sep(" ");
-                boost::tokenizer<boost::char_separator<char>> tok(
-                       num_localities, sep);
-                const std::string number_str{*tok.begin()}; 
-                num_localities_ = from_string<std::size_t>(number_str, std::size_t(1));
+            boost::char_separator<char> sep(" ");
+            boost::tokenizer<boost::char_separator<char>> tok(std::string{nodes_core_list}, sep);
+
+            // Number of Nodes is first element
+            auto num_localities = std::string{*std::begin(tok)};
+            num_localities_ = from_string<std::size_t>(num_localities, std::size_t(1));
+
+            // Calculate node number from CCP_NODES by finding COMPUTERNAME
+            auto found_node_pos = std::find(std::begin(tok),std::end(tok),std::string(current_node_name));
+            if(found_node_pos == std::end(tok)) {
+                // Currrent COMPUTERNAME not in CCP_NODES -> invalid environment
+                valid_ = false;
+                return;
             }
+            node_num_ = ((static_cast<std::size_t>(std::distance(std::begin(tok),found_node_pos)) - 1) / 2)+1; 
+            // -1 Since first element ist number of nodes; div 2 due to CCP_NODES being pairs of <name> <avail_cores>
 
             if (have_mpi)
             {
-                // Initialize our node number, if available
+                // Initialize our node number from MPI env. 
                 char* var = std::getenv("PMI_RANK");
                 if (var != nullptr)
                 {
                     node_num_ = from_string<std::size_t>(var);
                 }
             }
-            else if (num_localities_ > 1)
-            {
-                valid_ = false;
-            }
 
-            // Get the number of threads, if available
-            char* var = std::getenv("CCP_COREIDS");
-            if (var != nullptr)
+            // Get assigned core numbers and create a hpc binding. 
+            char* core_list = std::getenv("CCP_COREIDS");
+            if (core_list != nullptr)
             {
-                boost::char_separator<char> sep(" ");
                 boost::tokenizer<boost::char_separator<char>> tok(
-                    std::string(var), sep);
+                    std::string(core_list), sep);
                 num_threads_ = static_cast<std::size_t>(
                     std::distance(std::begin(tok), std::end(tok))) + 1;
-            }
-            else if ((var = std::getenv("CCP_NODES")) != nullptr)
-            {
-                boost::char_separator<char> sep(" ");
-                boost::tokenizer<boost::char_separator<char>> tok(
-                    std::string(var), sep);
-                auto node_name = std::getenv("COMPUTERNAME"); // Should always be defined 
-                auto found_node_pos = std::find(std::begin(tok),std::end(tok),std::string(node_name));
-                num_threads_ =  from_string<std::size_t>(*(found_node_pos++));
-            }
-            else
-            {
-                valid_ = false;
-            }
-
-            if (nodelist.empty())
-            {
-                read_node_env(nodelist, have_mpi, debug);
-            }
-            char * core_list = std::getenv("CCP_COREIDS");
-            if(core_list != nullptr) {
                 core_bind_ = std::string{"thread:all=pu:"};
                 core_bind_.append(core_list);
                 boost::algorithm::replace_all(core_bind_, " ", ",");
             }
-        }
-    }
-    void hpcpack_environment::read_node_env(std::vector<std::string>& nodelist, bool have_mpi, bool debug) {
-        char * nodelist_env = std::getenv("CCP_NODES");
-        boost::char_separator<char> sep(" ");
-        boost::tokenizer<boost::char_separator<char>> tok(
-                    std::string(nodelist_env), sep);
-        auto iter = tok.begin();
-        for(++iter; iter != tok.end(); ++(++iter)) {
-            // Move one since 1. element is the number of nodes
-            // Move two since the list is always <node> <nr_of_cores>
-            nodelist.emplace_back(*iter);
+            else
+            {
+                num_threads_ =  from_string<std::size_t>(*(found_node_pos++));
+            }
+
+            // Populate nodelist.
+            if (nodelist.empty())
+            {
+                auto iter = tok.begin();
+                for(++iter; iter != tok.end(); ++(++iter)) {
+                    // Move one since 1. element is the number of nodes
+                    // Move two since the list is always <node> <nr_of_cores>
+                    nodelist.emplace_back(*iter);
+                }
+            }
         }
     }
 }}}
