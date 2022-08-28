@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <iostream>
 
 // Env variables for HPC Pack can be found at:
 // https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-hpc-server-2008r2/gg286970(v=ws.10)
@@ -66,9 +67,7 @@ namespace hpx { namespace util { namespace batch_environments {
         auto nodes_core_list = std::getenv("CCP_NODES");
         if (valid_ = (nodes_core_list != nullptr); valid_)
         {
-            auto current_node_name = std::getenv("COMPUTERNAME");
 
-            const std::string current_node_str{current_node_name};
             const std::string nodes_str{nodes_core_list};
 
             // Initialize our node number
@@ -80,7 +79,11 @@ namespace hpx { namespace util { namespace batch_environments {
             num_localities_ =
                 from_string<std::size_t>(num_localities_str, std::size_t(1));
 
-            // Calculate node number from CCP_NODES by finding COMPUTERNAME            
+
+
+            auto current_node_name = std::getenv("COMPUTERNAME");
+            const std::string current_node_str{current_node_name};
+            // Calculate node number from CCP_NODES by finding COMPUTERNAME
             auto found_node_pos =
                 std::find(std::begin(tok), std::end(tok), current_node_str);
             if(found_node_pos == std::end(tok)) {
@@ -89,8 +92,8 @@ namespace hpx { namespace util { namespace batch_environments {
                 return;
             }
             node_num_ = ((static_cast<std::size_t>(std::distance(std::begin(tok),found_node_pos)) - 1) / 2); 
-            // -1 Since first element ist number of nodes; div 2 due to CCP_NODES being pairs of <name> <avail_cores>
 
+            // -1 Since first element ist number of nodes; div 2 due to CCP_NODES being pairs of <name> <avail_cores>
             if (have_mpi)
             {
                 // Initialize our node number from MPI env. 
@@ -129,6 +132,17 @@ namespace hpx { namespace util { namespace batch_environments {
                     // Move two since the list is always <node> <nr_of_cores>
                     nodelist.emplace_back(*iter);
                 }
+            }
+
+            if(debug) {
+                std::cerr << "HPC Pack nodelist: " 
+                          << nodes_str << std::endl;
+                std::cerr << "Localities: " 
+                          << num_localities_ << std::endl;
+                std::cerr << "Threads: " 
+                          << num_threads_ << std::endl;
+                std::cerr << "Name: " 
+                          << current_node_name << std::endl;
             }
         }
     }
