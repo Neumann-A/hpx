@@ -13,6 +13,7 @@
 #include <hpx/batch_environments/pbs_environment.hpp>
 #include <hpx/batch_environments/pjm_environment.hpp>
 #include <hpx/batch_environments/slurm_environment.hpp>
+#include <hpx/batch_environments/hpcpack_environment.hpp>
 #include <hpx/modules/errors.hpp>
 #include <hpx/type_support/unused.hpp>
 
@@ -97,6 +98,16 @@ namespace hpx { namespace util {
             num_threads_ = pbs_env.num_threads();
             num_localities_ = pbs_env.num_localities();
             node_num_ = pbs_env.node_num();
+            return;
+        }
+        batch_environments::hpcpack_environment hpcpack_env(nodelist, have_mpi, debug);
+        if (hpcpack_env.valid())
+        {
+            batch_name_ = "HPCPack";
+            num_threads_ = hpcpack_env.num_threads();
+            num_localities_ = hpcpack_env.num_localities();
+            node_num_ = hpcpack_env.node_num();
+            core_bind_ = hpcpack_env.core_bind();
             return;
         }
     }
@@ -243,4 +254,12 @@ namespace hpx { namespace util {
     {
         return batch_name_;
     }
+
+    bool batch_environment::has_core_bind() const
+    {
+        return !get_core_bind().empty();
+    }
+    std::string batch_environment::get_core_bind() const {
+        return core_bind_; 
+    };
 }}    // namespace hpx::util

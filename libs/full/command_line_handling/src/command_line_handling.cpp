@@ -246,8 +246,14 @@ namespace hpx { namespace util {
 
         std::string handle_affinity_bind(util::manage_config& cfgmap,
             hpx::program_options::variables_map& vm,
+            util::batch_environment& env,
             std::string const& default_)
         {
+            if (env.found_batch_environment() && env.has_core_bind())
+            {
+                return env.get_core_bind();
+            }
+
             // command line options is used preferred
             if (vm.count("hpx:bind"))
             {
@@ -992,7 +998,7 @@ namespace hpx { namespace util {
 
         check_affinity_domain();
 
-        affinity_bind_ = detail::handle_affinity_bind(cfgmap, vm, "");
+        affinity_bind_ = detail::handle_affinity_bind(cfgmap, vm, env, "");
         if (!affinity_bind_.empty())
         {
 #if defined(__APPLE__)

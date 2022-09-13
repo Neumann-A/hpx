@@ -74,6 +74,11 @@ namespace hpx { namespace util {
         // Return a string containing the name of the batch system
         std::string get_batch_name() const;
 
+        // Return if the environment defines a core binding.
+        bool has_core_bind() const;
+        // Returns the core binding
+        std::string get_core_bind() const;
+
         typedef std::map<asio::ip::tcp::endpoint,
             std::pair<std::string, std::size_t>>
             node_map_type;
@@ -85,6 +90,7 @@ namespace hpx { namespace util {
         node_map_type nodes_;
         std::size_t num_localities_;
         std::string batch_name_;
+        std::string core_bind_;
         bool debug_;
     };
 }}    // namespace hpx::util

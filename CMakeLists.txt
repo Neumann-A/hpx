@@ -15,6 +15,11 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+set(CMAKE_TOOLCHAIN_FILE "E:/vcpkg_folders/master_clean/scripts/buildsystems/vcpkg.cmake")
+set(VCPKG_TARGET_TRIPLET x64-windows)
+set(HPX_WITH_COMPRESSION_SNAPPY ON)
+set(HPX_WITH_PARCELPORT_MPI ON)
+set(HPX_WITH_PARCELPORT_MPI_MULTITHREADED ON)
 
 # Overrides must go before the project() statement, otherwise they are ignored.
 
