@@ -479,9 +479,7 @@ namespace hpx { namespace util {
                 ("hpx:iftransform", value<std::string>(),
                   "sed-style search and replace (s/search/replace/) used to "
                   "transform host names to the proper network interconnect")
-                ("hpx:force_ipv4", value<bool>()->default_value(false),
-                  "Force ipv4 for resolving network hostnames"
-                )
+                ("hpx:force_ipv4", "Force ipv4 for resolving network hostnames")
 #endif
 #if defined(HPX_HAVE_DISTRIBUTED_RUNTIME)
                 ("hpx:localities", value<std::size_t>(),
