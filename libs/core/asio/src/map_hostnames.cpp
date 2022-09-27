@@ -28,6 +28,7 @@ namespace hpx { namespace util {
             // map local host to loopback ip address (that's a quick hack
             // which will be removed as soon as we figure out why name
             // resolution does not handle this anymore)
+            // For me pinging localhost returns an ipv6 adress ::1. 
             if (debug_)
             {
                 std::cerr << "resolved: 'localhost' to: 127.0.0.1" << std::endl;
@@ -48,7 +49,7 @@ namespace hpx { namespace util {
         // do full host name resolution
         asio::io_context io_service;
         asio::ip::tcp::endpoint ep = util::resolve_hostname(
-            prefix_ + host_name + suffix_, port, io_service);
+            prefix_ + host_name + suffix_, port, io_service, ipv4_);
 
         std::string resolved_addr(util::get_endpoint_name(ep));
         if (debug_)
